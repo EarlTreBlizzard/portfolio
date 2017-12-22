@@ -1,0 +1,49 @@
+Package testderiv
+
+%% Test the derivative program.
+
+Import "deriv".
+
+====================================================
+%% Simplify tests
+====================================================
+
+Define ShowSimplify(e). =
+  Writeln[$(e), " = ", $(simplify e)].
+%Define
+
+Execute
+  Writeln["Simplify tests\n--------------"].
+  ShowSimplify constant(2) + constant(5).
+  ShowSimplify constant(2) + constant(5) + constant(6).
+  ShowSimplify xx + constant(0).
+  ShowSimplify constant(0) + xx.
+  ShowSimplify constant(5) * xx * xx ^ constant(4).
+  ShowSimplify xx * (xx ^ constant(4)) + constant(5) * xx.
+  ShowSimplify (xx ^ xx) ^ xx.
+  ShowSimplify constant(0) - xx.
+  Writeln.
+%Execute
+
+====================================================
+%% Deriv tests
+====================================================
+
+Define ShowDeriv(e). =
+  Writeln["(", $(e), ")' = ",   $ deriv(e)].
+%Define
+
+Execute
+  Writeln["Deriv tests\n----------"].
+  ShowDeriv constant(4) + xx.
+  ShowDeriv constant(4) * constant(4).
+  ShowDeriv xx * xx.  
+  ShowDeriv constant(2) * xx + constant(2) * xx.
+  ShowDeriv xx * xx ^ constant(4) + constant(5) * xx.
+  ShowDeriv xx * (xx ^ constant(4)) + constant(5) * xx.
+  ShowDeriv (constant(4) * xx) ^ constant(6).
+%Execute
+
+
+%Package
+

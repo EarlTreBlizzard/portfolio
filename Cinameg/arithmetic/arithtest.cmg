@@ -1,0 +1,142 @@
+Package arithtest
+
+Import "arithmetic".
+
+%% The following functions are provided for convenience.
+
+Expect 
+  intToBinary: Integer -> [Integer]
+     %: intToBinary(n) is the binary equivalent of
+     %: nonnegative integer n.
+     ;
+
+  binaryToInt: [Integer] -> Integer
+     %: binaryToInt(x) is the integer that binary
+     %: list x stands for.
+%Expect
+
+Define 
+  case intToBinary (0)     = []
+  case intToBinary (2*n)   = 0 :: intToBinary(n)
+  case intToBinary (2*n+1) = 1 :: intToBinary(n)
+%Define
+
+Example
+  intToBinary(12) = [0,0,1,1]
+%Example
+
+Define 
+  case binaryToInt([])   = 0
+  case binaryToInt(0::x) = 2*binaryToInt(x)
+  case binaryToInt(1::x) = 2*binaryToInt(x) + 1
+%Define
+
+Example
+  binaryToInt([0,0,1,1]) = 12
+%Example
+
+
+%% Note: $(x) is x converted to a string.  It is similar
+%% to x.tostring() in Java.
+
+Define TestInc(n: Integer). =
+  !x = intToBinary(n).
+  !y = inc(x).
+  !z = binaryToInt(y).
+
+  If z == n + 1 then
+    Displayln "inc works for %(n)".
+  else
+    Displayln "***inc(%(n)) = %(z)".
+    Displayln "---inc(%(x)) = %(y)".
+  %If
+%Define
+
+Define TestDec(n: Integer). =
+  !x = intToBinary(n).
+  !y = dec(x).
+  !z = binaryToInt(y).
+
+  If z == n - 1 then
+    Displayln "dec works for %(n)".
+  else
+    Displayln "***dec(%(n)) = %(z)".
+    Displayln "---dec(%(x)) = %(y)".
+  %If
+%Define
+
+Define TestSum(n: Integer , m: Integer). =
+  !w = intToBinary(m).
+  !x = intToBinary(n).
+  !y = sum(x , w).
+  !z = binaryToInt(y).
+
+  If z == n + m then
+    Displayln "sum works for %(n) , %(m)".
+  else
+    Displayln "***sum(%(n) , %(m)) = %(z)".
+    Displayln "---sum(%(x) , %(w)) = %(y)".
+  %If
+%Define
+
+Define TestDiff(n: Integer , m: Integer). =
+  !w = intToBinary(m).
+  !x = intToBinary(n).
+  !y = diff(x , w).
+  !z = binaryToInt(y).
+
+  If z == n - m then
+    Displayln "diff works for %(n) , %(m)".
+  else
+    Displayln "***diff(%(n) , %(m)) = %(z)".
+    Displayln "---diff(%(x) , %(w)) = %(y)".
+  %If
+%Define
+
+Define TestProduct(n: Integer , m: Integer). =
+  !w = intToBinary(m).
+  !x = intToBinary(n).
+  !y = product(x , w).
+  !z = binaryToInt(y).
+
+  If z == n * m then
+    Displayln "product works for %(n) , %(m)".
+  else
+    Displayln "***product(%(n) , %(m)) = %(z)".
+    Displayln "---product(%(x) , %(w)) = %(y)".
+  %If
+%Define
+
+Execute
+  TestInc(0).
+  TestInc(1).
+  TestInc(2).
+  TestInc(31).
+  TestInc(64). 
+  TestDec(0).
+  TestDec(1).
+  TestDec(2).
+  TestDec(31).
+  TestDec(64). 
+  TestSum(0,0).
+  TestSum(1,1).
+  TestSum(2,2).
+  TestSum(31,31).
+  TestSum(64,64).
+  TestDiff(0,0).
+  TestDiff(1,1).
+  TestDiff(2,2).
+  TestDiff(31,31).
+  TestDiff(64,64).
+  TestProduct(0,0).
+  TestProduct(1,1).
+  TestProduct(2,2).
+  TestProduct(31,31).
+  TestProduct(64,64).
+
+
+  %% ***** Add more tests.  Test all functions.
+%Execute
+
+%Package
+

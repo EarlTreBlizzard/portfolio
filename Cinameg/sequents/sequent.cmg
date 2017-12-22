@@ -1,0 +1,267 @@
+Package sequent
+
+=============================================
+                  export
+=============================================
+
+=============================================
+%%             Binary operators
+=============================================
+
+Operator 
+  |-  (++);
+  \/  (+);
+  /\  (*);
+  ==> (opL5)
+%Operator
+
+=============================================
+%%             Formula
+=============================================
+
+Type Formula =
+    vbl String
+  | neg Formula
+  | Formula /\ Formula
+  | Formula \/ Formula
+  | Formula ==> Formula
+with
+  $, show, ==
+%Type
+
+=============================================
+%%             Sequent
+=============================================
+
+Type Sequent =
+  [Formula] |- [Formula]
+with
+  $, show, ==
+%Type
+
+Abbrev 
+  MaybeSequents = Maybe of [Sequent];
+  FormulaTester = Formula -> Boolean;
+  Rule          = Sequent -> MaybeSequents
+%Abbrev
+
+Expect
+negL: Rule;
+negR: Rule;
+andL: Rule;
+andR: Rule;
+orL: Rule;
+orR: Rule;
+thereForL: Rule;
+thereForR: Rule;
+tryRule?: (Sequent , [Rule])-> Boolean;
+%Expect
+
+Expect valid?: Formula -> Boolean
+  %: valid?(f) is true if formula f is valid.
+%Expect
+
+Expect validSequent?: Sequent -> Boolean
+  %: validSequent?(x) is true if sequent x is
+  %: valid.
+%Expect
+
+Expect validSequentSet?: [Sequent] -> Boolean
+  %: validSequentSet?(f) is true if Sequent f is valid.
+%Expect
+
+Expect basicSequent?: Sequent -> Boolean
+  %: basicSequent(f) is true if the Sequent f is basic.
+%Expect
+
+Expect moveToFront: (FormulaTester, [Formula] ) ->[Formula]
+  %: moveToFront?(test , f) returns a list 
+  %: that contains all members of f reordered to
+  %: to where the first member that satisfies test
+  %: will be moved to the front.
+%Expect
+
+Expect tryRule?: (Sequent, [Rule])  -> Boolean
+  %: valid?(f) is true if formula f is valid.
+%Expect
+
+=============================================
+                implementation
+=============================================
+
+Import "collect/search".
+Import "parseSequent".
+
+
+%%-----------------------------------
+%%		basicSequent?
+%%-----------------------------------
+Define
+---------------------------------------------
+%%this function states whether a sequent is basic or not
+%% all basic sequent are valid
+
+case basicSequent?(alpha |- beta) = someSatisfy (x|-> x `in` alpha) beta
+---------------------------------------------
+%Define
+
+  %: moveToFront?(test , f) returns a list 
+  %: that contains all members of f reordered to
+  %: to where the first member that satisfies test
+  %: will be moved to the front.
+Define
+---------------------------------------------
+case moveToFront(test, list) = (select(x |-> test(x))list) :: list -/ (select(x |-> test(x))list) when(someSatisfy(x |-> test(x))list)
+---------------------------------------------
+case moveToFront( ? , []) = []
+---------------------------------------------
+case moveToFront(? , list) = list
+%Define
+
+
+Define
+---------------------------------------------
+%% this case tests the head of the list
+%% and then passes on the rest of the list.
+
+case validSequentSet?(x) = allSatisfy(a|-> validSequent?(a)) x
+
+%Define
+
+%%---------------------------------------------------------------
+%%				Rules
+%%---------------------------------------------------------------
+
+Define
+---------------------------------------------
+case negLHelp (neg x :: alpha |- beta) = something [alpha |- x :: beta]
+---------------------------------------------
+case negLHelp (?)                      = nothing;
+---------------------------------------------
+
+case negL(alpha |- beta) = negLHelp(moveToFront (neg? , alpha )|- beta)
+
+%Define
+
+Define
+---------------------------------------------
+case negRHelp (alpha |- neg x :: beta) = something [x :: alpha |- beta]
+---------------------------------------------
+case negRHelp (?)                      = nothing;
+---------------------------------------------
+
+negR(alpha |- beta) = negRHelp( alpha |- moveToFront (neg? , beta))
+
+%Define
+
+Define
+---------------------------------------------
+case andLHelp (x /\ y :: alpha |- beta) = something [x :: y :: alpha |- beta]
+---------------------------------------------
+case andLHelp (?)                      = nothing;
+---------------------------------------------
+
+andL(alpha |- beta) = andLHelp( moveToFront (/\? , alpha )|- beta)
+
+%Define
+
+Define
+---------------------------------------------
+case andRHelp (alpha |- a /\ b :: beta) = something [alpha |- a :: beta , alpha |- b :: beta]
+---------------------------------------------
+case andRHelp (?)                      = nothing;
+---------------------------------------------
+
+andR(alpha |- beta) = andRHelp( alpha |- moveToFront (/\? , beta))
+
+%Define
+
+Define
+---------------------------------------------
+case orLHelp (a \/ b :: alpha |- beta) = something [a :: alpha |- beta , b :: alpha |- beta]
+---------------------------------------------
+case orLHelp (?)                      = nothing;
+---------------------------------------------
+
+orL(alpha |- beta) = orLHelp( moveToFront (\/? , alpha) |- beta)
+
+%Define
+
+Define
+---------------------------------------------
+case orRHelp (alpha |- a \/ b :: beta) = something [alpha |- a :: b :: beta ]
+---------------------------------------------
+case orRHelp (?)                      = nothing;
+---------------------------------------------
+
+orR(alpha |- beta) = orRHelp( alpha |- moveToFront (\/? , beta))
+
+%Define
+
+Define
+---------------------------------------------
+case thereForLHelp (a ==> b :: alpha |- beta) = something [alpha |- a :: beta , b :: alpha |- beta]
+---------------------------------------------
+case thereForLHelp (?)                 = nothing;
+---------------------------------------------
+
+thereForL(alpha |- beta) =  thereForLHelp( moveToFront (==>? , alpha) |- beta)
+
+%Define
+
+Define
+---------------------------------------------
+case thereForRHelp (alpha |- a ==> b :: beta) = something [a :: alpha |- b :: beta]
+---------------------------------------------
+case thereForRHelp (?)                 = nothing;
+---------------------------------------------
+
+thereForR(alpha |- beta) =  thereForRHelp( alpha |- moveToFront (==>? , beta))
+
+%Define
+
+%%---------------------------------------------------------------
+%%			end of Rules
+%%---------------------------------------------------------------
+
+
+Define
+---------------------------------------------
+case tryRule?(?, []) = false
+---------------------------------------------
+case tryRule?( alpha |- beta , x :: list) = tryRule?( alpha |- beta , list) when ( x( alpha |- beta) == nothing)
+---------------------------------------------
+else tryRule?( alpha |- beta , x :: ?)    = validSequentSet?(unsomething(x(alpha |- beta)))
+---------------------------------------------
+
+
+%Define
+
+Define
+---------------------------------------------
+case validSequent?(alpha |- beta) = true when (basicSequent?(alpha |- beta))
+---------------------------------------------
+else validSequent?(alpha |- beta) = tryRule?(alpha |- beta , [negL , negR , andL , orR , thereForR, andR , orL, thereForL ])
+---------------------------------------------
+%Define
+
+Define
+---------------------------------------------
+case valid?(x) = validSequent?([] |- [x])
+---------------------------------------------
+
+%Define
+
+
+Execute
+	
+	Match $(f: Formula) = "((-A ==> B) /\\ (-A ==> -B)) ==> A".
+
+	Writeln.
+	Writeln[$valid?(f)].
+%Execute
+
+
+
+
+%Package
